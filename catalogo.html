@@ -9,8 +9,9 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--ac:#D4AF6A;--ac-d:#A9843F;--bg:#F7F5F2;--surface:#fff;--border:#E9E4DC;--txt:#1A1A1A}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--txt);background:var(--bg);min-height:100vh}
-input,select{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--txt);font-size:13px;font-family:inherit}
-input:focus,select:focus{outline:none;border-color:var(--ac)}
+input,select,textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--txt);font-size:13px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac)}
+textarea{resize:vertical}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 15px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--txt);font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;min-height:38px}
 .btn:hover{background:var(--bg)}
 .btn-r{background:var(--ac);border-color:var(--ac);color:#fff}
@@ -48,6 +49,8 @@ input:focus,select:focus{outline:none;border-color:var(--ac)}
 .pcard .tags{margin-bottom:8px}
 .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:600;margin:0 2px}
 .td{background:#F6EEDD;color:#8A6D2A}.tm{background:#EAF3DE;color:#3B6D11}
+.pcard .desc{font-size:12px;color:#8A8378;line-height:1.4;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lightbox .lb-info .d{font-size:13px;opacity:.8;margin:6px auto 0;max-width:520px;line-height:1.45;white-space:pre-line;max-height:25vh;overflow-y:auto}
 .pcard .precio{font-size:17px;font-weight:700;color:var(--ac)}
 .empty{max-width:1100px;margin:3rem auto;text-align:center;color:#aaa;padding:0 1rem}
 footer{text-align:center;padding:1.5rem;color:#bbb;font-size:11px}
@@ -113,6 +116,7 @@ let S={
   filtroTexto:'',filtroTipo:'',
 };
 
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const fmt=n=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(n||0);
 
 function toast(msg,ok=true){
@@ -171,6 +175,7 @@ function cardHTML(p){
     ${imgBlock}
     <div class="nom">${p.nombre}</div>
     <div class="tags"><span class="tag ${tc}">${p.material}</span> <span class="tag tm">${p.tipo}</span></div>
+    ${p.descripcion?`<div class="desc">${esc(p.descripcion)}</div>`:''}
     <div class="precio">${fmt(p.precio)}</div>
   </div>`;
 }
@@ -179,7 +184,7 @@ function abrirFoto(id){
   const d=document.createElement('div');d.className='lightbox';
   d.innerHTML=`<button class="close">&times;</button>
     <div class="lb-img"><img src="${p.imagen_url}" alt="${p.nombre}"></div>
-    <div class="lb-info"><div class="n">${p.nombre}</div><div class="p">${fmt(p.precio)}</div></div>
+    <div class="lb-info"><div class="n">${p.nombre}</div><div class="p">${fmt(p.precio)}</div>${p.descripcion?`<div class="d">${esc(p.descripcion)}</div>`:''}</div>
     <div class="lb-hint">Toca la imagen para acercar · Toca fuera para cerrar</div>`;
   const img=d.querySelector('img');
   const cerrar=()=>{d.remove();document.removeEventListener('keydown',onKey);};
@@ -224,6 +229,7 @@ function renderAdmin(){
         <div class="frow"><label>Precio</label><input id="a-p" type="number" value="100000"></div>
         <div class="frow"><label>Foto (opcional)</label><input id="a-foto" type="file" accept="image/*"></div>
       </div>
+      <div class="frow"><label>Descripción (opcional)</label><textarea id="a-d" rows="3" placeholder="Ej: Anillo con circón central, ajustable, ideal para regalo"></textarea></div>
       <button id="a-btn" class="btn btn-r" onclick="agregarProducto()"><i class="ti ti-plus"></i> Agregar al catálogo</button>
     </div>
     <div class="card">
@@ -245,7 +251,8 @@ function rowHTML(p){
       <input id="foto-${p.id}" type="file" accept="image/*" style="display:none" onchange="cambiarFoto(${p.id},this.files[0])">
       <button class="btn btn-sm" onclick="document.getElementById('foto-${p.id}').click()" style="margin-top:4px;padding:2px 6px"><i class="ti ti-camera"></i></button>
     </td>
-    <td style="font-weight:600">${p.nombre}</td>
+    <td><div style="font-weight:600">${p.nombre}</div>
+      <textarea rows="2" placeholder="Descripción..." style="margin-top:4px;padding:4px 6px;font-size:12px;min-width:160px" onchange="editarCampo(${p.id},'descripcion',this.value.trim()||null)">${esc(p.descripcion)}</textarea></td>
     <td>${p.tipo}</td>
     <td>${p.material}</td>
     <td><input type="number" min="0" value="${p.cant}" style="width:65px;padding:4px" onchange="editarCampo(${p.id},'cant',this.value,true)"></td>
@@ -277,6 +284,7 @@ async function agregarProducto(){
   const cant=parseInt(document.getElementById('a-c').value)||0;
   const precio=parseInt(document.getElementById('a-p').value)||0;
   const fotoFile=document.getElementById('a-foto').files[0];
+  const descripcion=document.getElementById('a-d').value.trim();
   if(!nombre){toast('Escribe el nombre de la pieza',false);return;}
   if(!tipo){toast('Escribe el tipo de la pieza',false);return;}
   if(!material){toast('Escribe el material de la pieza',false);return;}
@@ -287,12 +295,13 @@ async function agregarProducto(){
     imagen_url=await subirImagen(fotoFile);
     if(!imagen_url)toast('No se pudo subir la foto, se guardó sin foto',false);
   }
-  const r=await dbPost('inventario',{nombre,tipo,material,cant,precio,pc:0,origen:'nuevo',imagen_url});
+  const r=await dbPost('inventario',{nombre,tipo,material,cant,precio,pc:0,origen:'nuevo',imagen_url,...(descripcion?{descripcion}:{})});
   btn.disabled=false;btn.innerHTML='<i class="ti ti-plus"></i> Agregar al catálogo';
   if(r&&r.__error){toast('No se pudo agregar (revisa tu sesión)',false);return;}
   toast('Pieza agregada ✓');
   document.getElementById('a-n').value='';
   document.getElementById('a-foto').value='';
+  document.getElementById('a-d').value='';
   await cargarAdmin();renderAdmin();
 }
 async function eliminarProducto(id){
