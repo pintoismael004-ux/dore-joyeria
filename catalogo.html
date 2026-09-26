@@ -47,7 +47,7 @@ textarea{resize:vertical}
 .pcard .icon{width:56px;height:56px;border-radius:50%;background:#FAF5EA;display:flex;align-items:center;justify-content:center;margin:0 auto .7rem;color:var(--ac);font-size:26px}
 .pcard .nom{font-weight:600;font-size:14px;margin-bottom:6px;min-height:36px}
 .pcard .tags{margin-bottom:8px}
-.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:600;margin:0 2px}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:600;margin:0 2px 4px}
 .td{background:#F6EEDD;color:#8A6D2A}.tm{background:#EAF3DE;color:#3B6D11}
 .pcard .desc{font-size:12px;color:#8A8378;line-height:1.4;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .lightbox .lb-info .d{font-size:13px;opacity:.8;margin:6px auto 0;max-width:520px;line-height:1.45;white-space:pre-line;max-height:25vh;overflow-y:auto}
@@ -60,6 +60,10 @@ footer{text-align:center;padding:1.5rem;color:#bbb;font-size:11px}
 .ct{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem}
 .frow{margin-bottom:.75rem}
 .frow label{display:block;font-size:11px;color:#aaa;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.matrow{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.matrow input{min-width:0}
+.matrow .mat-c{max-width:160px}
+.matrow .btn{flex-shrink:0}
 .formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase}
@@ -167,14 +171,14 @@ function renderCatalogo(){
 }
 function cardHTML(p){
   const icon=ICONOS[p.tipo]||'ti-sparkles';
-  const tc=p.material?.includes('Oro')?'td':'tm';
+  const tagsMat=matsDe(p).map(m=>`<span class="tag ${m.material.includes('Oro')?'td':'tm'}">${esc(m.material)}${m.cantidad?' · '+esc(m.cantidad):''}</span>`).join(' ');
   const imgBlock=p.imagen_url
     ?`<div class="foto" onclick="abrirFoto(${p.id})"><img src="${p.imagen_url}" loading="lazy"></div>`
     :`<div class="icon"><i class="ti ${icon}"></i></div>`;
   return `<div class="pcard">
     ${imgBlock}
     <div class="nom">${p.nombre}</div>
-    <div class="tags"><span class="tag ${tc}">${p.material}</span> <span class="tag tm">${p.tipo}</span></div>
+    <div class="tags">${tagsMat} <span class="tag tm">${p.tipo}</span></div>
     ${p.descripcion?`<div class="desc">${esc(p.descripcion)}</div>`:''}
     <div class="precio">${fmt(p.precio)}</div>
   </div>`;
@@ -184,7 +188,7 @@ function abrirFoto(id){
   const d=document.createElement('div');d.className='lightbox';
   d.innerHTML=`<button class="close">&times;</button>
     <div class="lb-img"><img src="${p.imagen_url}" alt="${p.nombre}"></div>
-    <div class="lb-info"><div class="n">${p.nombre}</div><div class="p">${fmt(p.precio)}</div>${p.descripcion?`<div class="d">${esc(p.descripcion)}</div>`:''}</div>
+    <div class="lb-info"><div class="n">${p.nombre}</div><div class="p">${fmt(p.precio)}</div><div class="d">${esc(resumenMats(matsDe(p)))}</div>${p.descripcion?`<div class="d">${esc(p.descripcion)}</div>`:''}</div>
     <div class="lb-hint">Toca la imagen para acercar · Toca fuera para cerrar</div>`;
   const img=d.querySelector('img');
   const cerrar=()=>{d.remove();document.removeEventListener('keydown',onKey);};
@@ -204,6 +208,54 @@ function abrirFoto(id){
   document.body.appendChild(d);
 }
 
+/* ══════════ MATERIALES (composición de la pieza) ══════════ */
+// Lista [{material,cantidad}] de la pieza; las piezas viejas solo tienen el texto "material"
+function matsDe(p){
+  if(Array.isArray(p.materiales)&&p.materiales.length)return p.materiales;
+  return p.material?[{material:p.material,cantidad:''}]:[];
+}
+const resumenMats=l=>l.map(m=>m.cantidad?`${m.material} ${m.cantidad}`:m.material).join(' + ');
+// Solo hace falta la columna "materiales" si hay más de uno o alguno lleva cantidad
+const necesitaMats=l=>l.length>1||l.some(m=>m.cantidad);
+function matFila(m={}){
+  return `<div class="matrow">
+    <input class="mat-m" list="dl-mats" placeholder="Material (ej: Oro 18k)" autocomplete="off" value="${esc(m.material)}">
+    <input class="mat-c" placeholder="Cantidad (ej: 3 g)" value="${esc(m.cantidad)}">
+    <button type="button" class="btn btn-sm" onclick="quitarMat(this)" title="Quitar"><i class="ti ti-x"></i></button>
+  </div>`;
+}
+function editorMats(id,lista){
+  return `<div id="${id}">${(lista.length?lista:[{}]).map(matFila).join('')}</div>
+    <button type="button" class="btn btn-sm" onclick="document.getElementById('${id}').insertAdjacentHTML('beforeend',matFila())"><i class="ti ti-plus"></i> Otro material</button>`;
+}
+function quitarMat(btn){
+  const fila=btn.parentElement;
+  if(fila.parentElement.children.length>1)fila.remove();
+  else fila.querySelectorAll('input').forEach(i=>i.value='');
+}
+function leerMats(id){
+  return[...document.querySelectorAll(`#${id} .matrow`)]
+    .map(f=>({material:f.querySelector('.mat-m').value.trim(),cantidad:f.querySelector('.mat-c').value.trim()}))
+    .filter(m=>m.material);
+}
+function editarMats(id){
+  const p=S.productos.find(x=>x.id===id);if(!p)return;
+  document.getElementById(`mt-${id}`).innerHTML=`<div style="min-width:280px">${editorMats(`em-${id}`,matsDe(p))}
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button class="btn btn-sm btn-r" onclick="guardarMats(${id})"><i class="ti ti-check"></i> Guardar</button>
+      <button class="btn btn-sm" onclick="renderAdmin()">Cancelar</button>
+    </div></div>`;
+}
+async function guardarMats(id){
+  const materiales=leerMats(`em-${id}`);
+  if(!materiales.length){toast('Escribe al menos un material',false);return;}
+  const material=resumenMats(materiales);
+  const r=await dbPatch('inventario',{material,materiales},`?id=eq.${id}`);
+  if(r&&r.__error){toast('No se pudo guardar (¿corriste materiales_setup.sql?)',false);return;}
+  const p=S.productos.find(x=>x.id===id);if(p){p.material=material;p.materiales=materiales;}
+  toast('Guardado ✓');renderAdmin();
+}
+
 /* ══════════ ADMIN ══════════ */
 async function cargarAdmin(){
   const r=await api('GET','inventario','','?order=tipo,nombre');
@@ -217,6 +269,7 @@ function renderAdmin(){
     <a class="adminlink" href="#" style="margin-left:auto">Ver catálogo</a>
     <button class="btn btn-sm" onclick="doLogout()" style="margin-left:10px;background:transparent;border-color:#444;color:#888;min-height:30px"><i class="ti ti-logout"></i></button>
   </div>
+  <datalist id="dl-mats">${MATERIALES.map(m=>`<option value="${m}">`).join('')}</datalist>
   <div class="adminwrap">
     <div class="ph" style="display:flex;align-items:center;gap:10px;margin:1rem 0"><h2 style="font-size:18px;font-weight:600">Administrar catálogo</h2></div>
     <div class="card" style="border:2px solid var(--ac)">
@@ -224,11 +277,11 @@ function renderAdmin(){
       <div class="formgrid">
         <div class="frow"><label>Nombre / Referencia</label><input id="a-n" placeholder="Ej: COQUETA (11B #3)"></div>
         <div class="frow"><label>Tipo</label><input id="a-t" list="dl-tipos" placeholder="Ej: Anillo" autocomplete="off"><datalist id="dl-tipos">${TIPOS.map(t=>`<option value="${t}">`).join('')}</datalist></div>
-        <div class="frow"><label>Material</label><input id="a-m" list="dl-mats" placeholder="Ej: Oro 18k" autocomplete="off"><datalist id="dl-mats">${MATERIALES.map(m=>`<option value="${m}">`).join('')}</datalist></div>
         <div class="frow"><label>Cantidad</label><input id="a-c" type="number" value="1" min="0"></div>
         <div class="frow"><label>Precio</label><input id="a-p" type="number" value="100000"></div>
         <div class="frow"><label>Foto (opcional)</label><input id="a-foto" type="file" accept="image/*"></div>
       </div>
+      <div class="frow"><label>Materiales</label>${editorMats('a-mats',[])}</div>
       <div class="frow"><label>Descripción (opcional)</label><textarea id="a-d" rows="3" placeholder="Ej: Anillo con circón central, ajustable, ideal para regalo"></textarea></div>
       <button id="a-btn" class="btn btn-r" onclick="agregarProducto()"><i class="ti ti-plus"></i> Agregar al catálogo</button>
     </div>
@@ -254,7 +307,8 @@ function rowHTML(p){
     <td><div style="font-weight:600">${p.nombre}</div>
       <textarea rows="2" placeholder="Descripción..." style="margin-top:4px;padding:4px 6px;font-size:12px;min-width:160px" onchange="editarCampo(${p.id},'descripcion',this.value.trim()||null)">${esc(p.descripcion)}</textarea></td>
     <td>${p.tipo}</td>
-    <td>${p.material}</td>
+    <td id="mt-${p.id}">${esc(resumenMats(matsDe(p)))}
+      <button class="btn btn-sm" onclick="editarMats(${p.id})" style="padding:2px 6px;margin-left:4px" title="Editar materiales"><i class="ti ti-pencil"></i></button></td>
     <td><input type="number" min="0" value="${p.cant}" style="width:65px;padding:4px" onchange="editarCampo(${p.id},'cant',this.value,true)"></td>
     <td><input type="number" min="0" value="${p.precio}" style="width:110px;padding:4px" onchange="editarCampo(${p.id},'precio',this.value,true)"></td>
     <td><button class="btn btn-sm" onclick="eliminarProducto(${p.id})" style="color:var(--ac);border-color:#F0DDBD;padding:4px 7px"><i class="ti ti-trash"></i></button></td>
@@ -280,14 +334,15 @@ async function editarCampo(id,campo,val,numero){
 async function agregarProducto(){
   const nombre=document.getElementById('a-n').value.trim();
   const tipo=document.getElementById('a-t').value.trim();
-  const material=document.getElementById('a-m').value.trim();
+  const materiales=leerMats('a-mats');
+  const material=resumenMats(materiales);
   const cant=parseInt(document.getElementById('a-c').value)||0;
   const precio=parseInt(document.getElementById('a-p').value)||0;
   const fotoFile=document.getElementById('a-foto').files[0];
   const descripcion=document.getElementById('a-d').value.trim();
   if(!nombre){toast('Escribe el nombre de la pieza',false);return;}
   if(!tipo){toast('Escribe el tipo de la pieza',false);return;}
-  if(!material){toast('Escribe el material de la pieza',false);return;}
+  if(!materiales.length){toast('Escribe al menos un material',false);return;}
   const btn=document.getElementById('a-btn');
   btn.disabled=true;btn.innerHTML='<i class="ti ti-refresh spin"></i> Guardando...';
   let imagen_url=null;
@@ -295,7 +350,7 @@ async function agregarProducto(){
     imagen_url=await subirImagen(fotoFile);
     if(!imagen_url)toast('No se pudo subir la foto, se guardó sin foto',false);
   }
-  const r=await dbPost('inventario',{nombre,tipo,material,cant,precio,pc:0,origen:'nuevo',imagen_url,...(descripcion?{descripcion}:{})});
+  const r=await dbPost('inventario',{nombre,tipo,material,cant,precio,pc:0,origen:'nuevo',imagen_url,...(necesitaMats(materiales)?{materiales}:{}),...(descripcion?{descripcion}:{})});
   btn.disabled=false;btn.innerHTML='<i class="ti ti-plus"></i> Agregar al catálogo';
   if(r&&r.__error){toast('No se pudo agregar (revisa tu sesión)',false);return;}
   toast('Pieza agregada ✓');
