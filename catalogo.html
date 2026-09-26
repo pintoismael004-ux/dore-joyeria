@@ -218,8 +218,8 @@ function renderAdmin(){
       <div class="ct" style="color:var(--ac)">Agregar pieza nueva</div>
       <div class="formgrid">
         <div class="frow"><label>Nombre / Referencia</label><input id="a-n" placeholder="Ej: COQUETA (11B #3)"></div>
-        <div class="frow"><label>Tipo</label><select id="a-t">${TIPOS.map(t=>`<option>${t}</option>`).join('')}</select></div>
-        <div class="frow"><label>Material</label><select id="a-m">${MATERIALES.map(m=>`<option>${m}</option>`).join('')}</select></div>
+        <div class="frow"><label>Tipo</label><input id="a-t" list="dl-tipos" placeholder="Ej: Anillo" autocomplete="off"><datalist id="dl-tipos">${TIPOS.map(t=>`<option value="${t}">`).join('')}</datalist></div>
+        <div class="frow"><label>Material</label><input id="a-m" list="dl-mats" placeholder="Ej: Oro 18k" autocomplete="off"><datalist id="dl-mats">${MATERIALES.map(m=>`<option value="${m}">`).join('')}</datalist></div>
         <div class="frow"><label>Cantidad</label><input id="a-c" type="number" value="1" min="0"></div>
         <div class="frow"><label>Precio</label><input id="a-p" type="number" value="100000"></div>
         <div class="frow"><label>Foto (opcional)</label><input id="a-foto" type="file" accept="image/*"></div>
@@ -272,12 +272,14 @@ async function editarCampo(id,campo,val,numero){
 }
 async function agregarProducto(){
   const nombre=document.getElementById('a-n').value.trim();
-  const tipo=document.getElementById('a-t').value;
-  const material=document.getElementById('a-m').value;
+  const tipo=document.getElementById('a-t').value.trim();
+  const material=document.getElementById('a-m').value.trim();
   const cant=parseInt(document.getElementById('a-c').value)||0;
   const precio=parseInt(document.getElementById('a-p').value)||0;
   const fotoFile=document.getElementById('a-foto').files[0];
   if(!nombre){toast('Escribe el nombre de la pieza',false);return;}
+  if(!tipo){toast('Escribe el tipo de la pieza',false);return;}
+  if(!material){toast('Escribe el material de la pieza',false);return;}
   const btn=document.getElementById('a-btn');
   btn.disabled=true;btn.innerHTML='<i class="ti ti-refresh spin"></i> Guardando...';
   let imagen_url=null;
