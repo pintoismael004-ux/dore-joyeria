@@ -34,7 +34,14 @@ input:focus,select:focus{outline:none;border-color:var(--ac)}
 .pcard .foto{width:100%;height:190px;border-radius:8px;margin-bottom:.85rem;background:#F5F4F2;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
 .pcard .foto img{width:100%;height:100%;object-fit:contain}
 .lightbox{position:fixed;inset:0;background:rgba(10,9,8,.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:2rem;cursor:zoom-out}
-.lightbox img{max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.lightbox{overflow:hidden;flex-direction:column;gap:12px}
+.lightbox .lb-img{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:8px}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);cursor:zoom-in;transition:transform .25s ease;user-select:none;-webkit-user-drag:none}
+.lightbox img.zoom{transform:scale(2.5);cursor:zoom-out;transition:none}
+.lightbox .lb-info{color:#fff;text-align:center;cursor:default}
+.lightbox .lb-info .n{font-size:16px;font-weight:600}
+.lightbox .lb-info .p{font-size:15px;opacity:.85;margin-top:2px}
+.lightbox .lb-hint{color:rgba(255,255,255,.55);font-size:12px}
 .lightbox .close{position:absolute;top:16px;right:20px;color:#fff;font-size:30px;background:none;border:none;cursor:pointer;line-height:1}
 .pcard .icon{width:56px;height:56px;border-radius:50%;background:#FAF5EA;display:flex;align-items:center;justify-content:center;margin:0 auto .7rem;color:var(--ac);font-size:26px}
 .pcard .nom{font-weight:600;font-size:14px;margin-bottom:6px;min-height:36px}
@@ -159,7 +166,7 @@ function cardHTML(p){
   const icon=ICONOS[p.tipo]||'ti-sparkles';
   const tc=p.material?.includes('Oro')?'td':'tm';
   const imgBlock=p.imagen_url
-    ?`<div class="foto" onclick="abrirFoto('${p.imagen_url.replace(/'/g,"\\'")}')"><img src="${p.imagen_url}" loading="lazy"></div>`
+    ?`<div class="foto" onclick="abrirFoto(${p.id})"><img src="${p.imagen_url}" loading="lazy"></div>`
     :`<div class="icon"><i class="ti ${icon}"></i></div>`;
   return `<div class="pcard">
     ${imgBlock}
@@ -168,10 +175,28 @@ function cardHTML(p){
     <div class="precio">${fmt(p.precio)}</div>
   </div>`;
 }
-function abrirFoto(url){
+function abrirFoto(id){
+  const p=S.productos.find(x=>x.id===id);if(!p?.imagen_url)return;
   const d=document.createElement('div');d.className='lightbox';
-  d.innerHTML=`<button class="close" onclick="event.stopPropagation();this.parentElement.remove()">&times;</button><img src="${url}">`;
-  d.onclick=()=>d.remove();
+  d.innerHTML=`<button class="close">&times;</button>
+    <div class="lb-img"><img src="${p.imagen_url}" alt="${p.nombre}"></div>
+    <div class="lb-info"><div class="n">${p.nombre}</div><div class="p">${fmt(p.precio)}</div></div>
+    <div class="lb-hint">Toca la imagen para acercar · Toca fuera para cerrar</div>`;
+  const img=d.querySelector('img');
+  const cerrar=()=>{d.remove();document.removeEventListener('keydown',onKey);};
+  const onKey=e=>{if(e.key==='Escape')cerrar();};
+  // Mueve el punto de zoom hacia donde está el cursor/dedo
+  const enfocar=(x,y)=>{const r=img.getBoundingClientRect();
+    img.style.transformOrigin=`${Math.min(100,Math.max(0,(x-r.left)/r.width*100))}% ${Math.min(100,Math.max(0,(y-r.top)/r.height*100))}%`;};
+  img.onclick=e=>{e.stopPropagation();
+    if(!img.classList.contains('zoom'))enfocar(e.clientX,e.clientY);
+    img.classList.toggle('zoom');};
+  img.onmousemove=e=>{if(img.classList.contains('zoom'))enfocar(e.clientX,e.clientY);};
+  img.ontouchmove=e=>{if(img.classList.contains('zoom')&&e.touches.length===1){e.preventDefault();enfocar(e.touches[0].clientX,e.touches[0].clientY);}};
+  d.querySelector('.lb-info').onclick=e=>e.stopPropagation();
+  d.querySelector('.close').onclick=e=>{e.stopPropagation();cerrar();};
+  d.onclick=cerrar;
+  document.addEventListener('keydown',onKey);
   document.body.appendChild(d);
 }
 
