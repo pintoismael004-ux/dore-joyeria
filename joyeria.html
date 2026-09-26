@@ -480,6 +480,8 @@ function tablaInv(rows){
     </table>
   </div>`;
 }
+// Lista base + los valores escritos a mano que ya existen en el inventario
+function opcionesInv(base,campo){return[...new Set([...base,...S.inventario.map(r=>r[campo]).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,'es'));}
 function pgInv(){
   return`<div class="ph"><h2 class="pt">Inventario</h2>
     <button class="btn btn-g btn-sm" onclick="showAddProd()"><i class="ti ti-plus"></i> Agregar</button>
@@ -490,8 +492,8 @@ function pgInv(){
       <i class="ti ti-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#aaa;font-size:15px"></i>
       <input id="inv-n" placeholder="Buscar referencia..." style="padding-left:32px" oninput="filtrarInv()"/>
     </div>
-    <select id="inv-t" onchange="filtrarInv()" style="width:140px"><option value="">Todo tipo</option>${TIPOS.map(t=>`<option>${t}</option>`).join('')}</select>
-    <select id="inv-m" onchange="filtrarInv()" style="width:150px"><option value="">Todo material</option>${MATERIALES.map(m=>`<option>${m}</option>`).join('')}</select>
+    <select id="inv-t" onchange="filtrarInv()" style="width:140px"><option value="">Todo tipo</option>${opcionesInv(TIPOS,'tipo').map(t=>`<option>${t}</option>`).join('')}</select>
+    <select id="inv-m" onchange="filtrarInv()" style="width:150px"><option value="">Todo material</option>${opcionesInv(MATERIALES,'material').map(m=>`<option>${m}</option>`).join('')}</select>
     <button class="btn btn-sm" onclick="goTo('inventario')"><i class="ti ti-refresh"></i></button>
   </div>
   <div id="addform"></div>
@@ -503,8 +505,8 @@ function showAddProd(){document.getElementById('addform').innerHTML=`<div class=
   <div class="ct">Agregar pieza</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
     <div class="frow"><label>Referencia / Nombre</label><input id="a-n" placeholder="Ej: ANILLO SOLITARIO"/></div>
-    <div class="frow"><label>Tipo</label><select id="a-t">${TIPOS.map(t=>`<option>${t}</option>`).join('')}</select></div>
-    <div class="frow"><label>Material</label><select id="a-m">${MATERIALES.map(m=>`<option>${m}</option>`).join('')}</select></div>
+    <div class="frow"><label>Tipo</label><input id="a-t" list="dl-tipos" placeholder="Ej: Anillo" autocomplete="off"/><datalist id="dl-tipos">${opcionesInv(TIPOS,'tipo').map(t=>`<option value="${t}">`).join('')}</datalist></div>
+    <div class="frow"><label>Material</label><input id="a-m" list="dl-mats" placeholder="Ej: Oro 18k" autocomplete="off"/><datalist id="dl-mats">${opcionesInv(MATERIALES,'material').map(m=>`<option value="${m}">`).join('')}</datalist></div>
     <div class="frow"><label>Talla (opcional)</label><input id="a-talla" placeholder="Ej: 7 (solo anillos)"/></div>
     <div class="frow"><label>Cantidad</label><input id="a-c" type="number" value="1" min="1"/></div>
     <div class="frow"><label>Origen</label><select id="a-ori"><option value="nuevo">Nuevo</option><option value="inicial">Inicial</option></select></div>
@@ -516,12 +518,14 @@ function showAddProd(){document.getElementById('addform').innerHTML=`<div class=
     <button class="btn" onclick="document.getElementById('addform').innerHTML=''">Cancelar</button>
   </div></div>`;}
 async function saveProd(){
-  const n=document.getElementById('a-n').value.trim().toUpperCase();const t=document.getElementById('a-t').value;
-  const m=document.getElementById('a-m').value;const talla=document.getElementById('a-talla').value.trim();
+  const n=document.getElementById('a-n').value.trim().toUpperCase();const t=document.getElementById('a-t').value.trim();
+  const m=document.getElementById('a-m').value.trim();const talla=document.getElementById('a-talla').value.trim();
   const c=parseInt(document.getElementById('a-c').value)||0;
   const pv=parseInt(document.getElementById('a-pv').value)||0;const pc=parseInt(document.getElementById('a-pc').value)||0;
   const ori=document.getElementById('a-ori').value;
   if(!n){toast('Ingresa la referencia',false);return;}
+  if(!t){toast('Ingresa el tipo',false);return;}
+  if(!m){toast('Ingresa el material',false);return;}
   const res=await dbPost('inventario',{nombre:n,tipo:t,material:m,talla:talla||null,cant:c,precio:pv,pc,origen:ori});
   if(res&&res[0])S.inventario.push(res[0]);
   toast('Guardado ✓');document.getElementById('addform').innerHTML='';goTo('inventario');
