@@ -7,20 +7,22 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--ac:#D4AF6A;--ac-d:#A9843F;--bg:#F7F5F2;--surface:#fff;--surface2:#F9F7F4;--border:#E9E4DC;--txt:#1A1A1A;--txt2:#666;--sidebar-w:200px}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--txt);background:var(--bg)}
+:root{--ac:#D4AF6A;--ac-d:#A9843F;--bg:#F7F5F2;--surface:#fff;--surface2:#F9F7F4;--border:#E9E4DC;--txt:#1A1A1A;--txt2:#666;--sidebar-w:200px;--wa:#25D366;--wa-dark:#128C7E}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--txt);background:linear-gradient(135deg,#f3f0ea 0,#faf9f7 55%,#f5f2ec 100%)}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(212,175,106,.5);outline-offset:2px}
 .app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.topbar{display:flex;align-items:center;gap:10px;padding:0 1rem;height:52px;background:#151312;flex-shrink:0}
+.topbar{display:flex;align-items:center;gap:10px;padding:0 1rem;height:56px;background:linear-gradient(100deg,#151312,#211d19);flex-shrink:0;box-shadow:0 3px 14px rgba(0,0,0,.12);z-index:2}
 .brand{color:#fff;font-weight:700;font-size:15px;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
 .brand i{color:var(--ac);font-size:20px}
 .body{display:flex;flex:1;overflow:hidden}
 .sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:#1C1917;overflow-y:auto;flex-shrink:0}
 .ns{padding:8px 14px 3px;font-size:10px;font-weight:700;color:#5A544C;letter-spacing:1.5px;text-transform:uppercase}
-.ni{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:13px;color:#8A8378;border-left:3px solid transparent;background:none;border-right:none;border-top:none;border-bottom:none;width:100%;text-align:left;font-family:inherit}
-.ni:hover{color:#fff;background:rgba(255,255,255,.05)}
+.ni{display:flex;align-items:center;gap:9px;padding:10px 16px;cursor:pointer;font-size:13px;color:#8A8378;border-left:3px solid transparent;background:none;border-right:none;border-top:none;border-bottom:none;width:100%;text-align:left;font-family:inherit;transition:color .16s ease,background .16s ease}
+.ni:hover{color:#fff;background:rgba(255,255,255,.07)}
 .ni.ac{color:#fff;border-left-color:var(--ac);background:rgba(176,141,87,.18)}
-.main{flex:1;overflow-y:auto;padding:1.25rem}
-.bottom-nav{display:none;background:#151312;border-top:1px solid #2E2B27;flex-shrink:0}
+.main{flex:1;overflow-y:auto;padding:1.35rem;background:linear-gradient(160deg,rgba(255,255,255,.42),transparent 45%);scroll-behavior:smooth}
+.bottom-nav{display:none;background:#151312;border-top:1px solid #2E2B27;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
 .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 4px;cursor:pointer;color:#6B655C;font-size:10px;gap:2px;min-height:54px;border:none;background:transparent;font-family:inherit}
 .bn-item i{font-size:22px}
 .bn-item.ac{color:var(--ac)}
@@ -43,10 +45,10 @@ input:focus,select:focus{outline:none;border-color:var(--ac)}
 .btn-full{width:100%}
 .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
 .ba{background:var(--ac);color:#fff}.bv{background:#333;color:#ccc}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem;margin-bottom:.9rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem;margin-bottom:.9rem;box-shadow:0 4px 16px rgba(34,27,18,.035)}
 .ct{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem}
 .met{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:.9rem}
-.mc2{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.8rem;text-align:center}
+.mc2{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.9rem;text-align:center;box-shadow:0 3px 12px rgba(34,27,18,.035)}
 .ml{font-size:11px;color:#aaa;margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
 .mv{font-size:17px;font-weight:600}
 .mv.r{color:var(--ac)}.mv.g{color:#1F5014}.mv.b{color:#0C447C}
@@ -91,7 +93,12 @@ input:focus,select:focus{outline:none;border-color:var(--ac)}
 .zc.sel{border-color:var(--ac);background:#FAF5EA;box-shadow:0 0 0 3px rgba(176,141,87,.15)}
 .ph{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
 .pt{font-size:19px;font-weight:600}
-@media(max-width:700px){.met{grid-template-columns:repeat(2,minmax(0,1fr))}.zg{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr 1fr}.ph{margin-bottom:.75rem}.pt{font-size:17px}}
+.whatsapp-float{position:fixed;right:24px;bottom:24px;z-index:10;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 17px;border-radius:999px;background:var(--wa);color:#fff;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 8px 22px rgba(18,140,126,.28);transition:transform .2s ease,background .2s ease}
+.whatsapp-float:hover{background:var(--wa-dark);transform:translateY(-2px)}
+.whatsapp-float i{font-size:22px}
+@media(max-width:700px){.sidebar{display:none}.bottom-nav{display:flex}.main{padding:.75rem;padding-bottom:1rem}.met{grid-template-columns:repeat(2,minmax(0,1fr))}.zg{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr 1fr}.ph{margin-bottom:.75rem}.pt{font-size:17px}.whatsapp-float{right:14px;bottom:calc(70px + env(safe-area-inset-bottom));min-width:50px;width:50px;height:50px;padding:0}.whatsapp-float span{display:none}.whatsapp-float i{font-size:24px}}
+@media(max-width:420px){.clg{gap:5px}.cli{padding:.55rem .25rem}.clv{font-size:15px}.grid2{grid-template-columns:1fr}.topbar{gap:6px;padding:0 .6rem}.topbar .badge{font-size:9px;padding:2px 5px}.topbar .btn{padding:4px 7px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
 </style>
 </head>
 <body>
@@ -296,7 +303,11 @@ function renderApp(){
     <div class="main" id="mc"><div class="loading"><i class="ti ti-refresh spin"></i> Cargando...</div></div>
   </div>
   <div class="bottom-nav" id="bnav">${bottomNav}</div>
-  </div>`;
+  </div>
+  <a class="whatsapp-float" href="https://wa.me/573045571827?text=${encodeURIComponent('Hola, me gustaría recibir información sobre sus joyas.')}" target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp al +57 304 557 1827">
+    <i class="ti ti-brand-whatsapp" aria-hidden="true"></i><span>WhatsApp</span>
+  </a>
+  `;
 }
 
 function toggleMore(){
