@@ -22,19 +22,21 @@ textarea{resize:vertical}
 .btn-full{width:100%}
 /* ── Header público ── */
 .topbar{display:flex;align-items:center;gap:10px;padding:.6rem max(1.25rem,calc((100vw - 1100px)/2));background:#fbfaf8;border-bottom:1px solid rgba(233,228,220,.7)}
-.logo-mark{display:inline-flex;align-items:center;justify-content:center;padding:7px;background:#806643;border-radius:7px}
+.logo-mark{display:inline-flex;align-items:center;justify-content:center;padding:8px;background:linear-gradient(145deg,#21190e,#090807);border:1px solid rgba(212,175,106,.8);border-radius:9px;box-shadow:0 0 0 3px rgba(212,175,106,.18),0 8px 22px rgba(0,0,0,.3)}
 .logo-mark img{display:block;mix-blend-mode:screen}
 .topbar .logo-mark{padding:3px;border-radius:4px}
 .topbar .logo-mark img{height:32px}
+.topbar-brand{display:flex;align-items:center;gap:10px;color:#342c20;font-size:14px;font-weight:700;letter-spacing:1.3px}
+.topbar-brand .brand-name{color:var(--ac-d)}
 .topbar .adminlink{margin-left:auto;color:#81796f;font-size:11px;text-decoration:none;cursor:pointer}
 .topbar .adminlink:hover{color:var(--ac-d)}
 .hero{position:relative;isolation:isolate;overflow:hidden;text-align:center;padding:2.25rem 1rem 2.4rem;background:linear-gradient(135deg,#f5f0e6,#fffdf9);border-radius:0 0 28px 28px;box-shadow:0 10px 26px rgba(100,77,39,.08)}
 .hero::before{position:absolute;inset:0;z-index:-1;content:"";background:url("assets/banner-joyeria.jpeg") center 55%/cover no-repeat;opacity:.7}
-.hero::after{position:absolute;inset:0;z-index:-1;content:"";background:linear-gradient(180deg,rgba(255,253,249,.42),rgba(255,253,249,.16))}
-.hero .logo-mark{margin-bottom:10px;box-shadow:0 5px 14px rgba(34,27,18,.16)}
+.hero::after{position:absolute;inset:0;z-index:-1;content:"";background:linear-gradient(180deg,rgba(20,15,10,.42),rgba(20,15,10,.58))}
+.hero .logo-mark{margin-bottom:14px;padding:10px}
 .hero .logo-mark img{height:90px}
-.hero h1{color:#342c20;font-size:clamp(21px,4vw,28px);letter-spacing:1.6px;font-weight:600}
-.hero p{color:#81796f;font-size:14px;margin-top:7px}
+.hero h1{color:#fff;font-size:clamp(23px,4vw,32px);letter-spacing:2px;font-weight:700;text-shadow:0 2px 12px rgba(0,0,0,.72)}
+.hero p{color:#fff4df;font-size:15px;font-weight:500;margin-top:9px;text-shadow:0 2px 8px rgba(0,0,0,.8)}
 .toolbar{max-width:1100px;margin:1.35rem auto 0;padding:0 1rem;display:flex;gap:10px;flex-wrap:wrap}
 .toolbar input{flex:1;min-width:180px}
 .toolbar select{width:160px}
@@ -163,7 +165,10 @@ function renderCatalogo(){
   const tiposDisponibles=[...new Set(S.productos.map(p=>p.tipo))].sort();
   document.getElementById('root').innerHTML=`
   <div class="topbar">
-    <div class="logo-mark"><img src="data:image/png;base64,${LOGO_B64}" alt="${NOMBRE_NEGOCIO}"></div>
+    <div class="topbar-brand">
+      <div class="logo-mark"><img src="data:image/png;base64,${LOGO_B64}" alt=""></div>
+      <span class="brand-name">${NOMBRE_NEGOCIO}</span>
+    </div>
   </div>
   <div class="hero">
     <div class="logo-mark"><img src="data:image/png;base64,${LOGO_B64}" alt="${NOMBRE_NEGOCIO}"></div>
