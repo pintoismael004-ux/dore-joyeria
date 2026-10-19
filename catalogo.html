@@ -28,7 +28,9 @@ textarea{resize:vertical}
 .topbar .logo-mark img{height:32px}
 .topbar .adminlink{margin-left:auto;color:#81796f;font-size:11px;text-decoration:none;cursor:pointer}
 .topbar .adminlink:hover{color:var(--ac-d)}
-.hero{text-align:center;padding:2.25rem 1rem 2.4rem;background:radial-gradient(ellipse at 50% 0%,rgba(212,175,106,.2),transparent 62%),linear-gradient(135deg,#f5f0e6,#fffdf9);border-radius:0 0 28px 28px;box-shadow:0 10px 26px rgba(100,77,39,.08)}
+.hero{position:relative;isolation:isolate;overflow:hidden;text-align:center;padding:2.25rem 1rem 2.4rem;background:linear-gradient(135deg,#f5f0e6,#fffdf9);border-radius:0 0 28px 28px;box-shadow:0 10px 26px rgba(100,77,39,.08)}
+.hero::before{position:absolute;inset:0;z-index:-1;content:"";background:url("assets/banner-joyeria.jpeg") center 55%/cover no-repeat;opacity:.7}
+.hero::after{position:absolute;inset:0;z-index:-1;content:"";background:linear-gradient(180deg,rgba(255,253,249,.42),rgba(255,253,249,.16))}
 .hero .logo-mark{margin-bottom:10px;box-shadow:0 5px 14px rgba(34,27,18,.16)}
 .hero .logo-mark img{height:90px}
 .hero h1{color:#342c20;font-size:clamp(21px,4vw,28px);letter-spacing:1.6px;font-weight:600}
